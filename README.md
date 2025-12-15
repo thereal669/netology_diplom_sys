@@ -102,7 +102,7 @@ Cоздайте ВМ, разверните на ней Elasticsearch. Устан
 
 ## Решение
 
-![screen](pics/9.jpg)
+![screen](pics/11.jpg)
 
 Ссылка на Kibana - http://51.250.88.6:5601/
 
