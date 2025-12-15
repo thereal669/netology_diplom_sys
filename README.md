@@ -89,8 +89,11 @@
 (чуть позже скрины добавлю)
 
 Zabbix доступен по линку - http://158.160.105.95/zabbix/
+
 Логин - Admin
-Пароль - zabbix
+
+Пароль - Zabbix
+
 
 ### Логи
 Cоздайте ВМ, разверните на ней Elasticsearch. Установите filebeat в ВМ к веб-серверам, настройте на отправку access.log, error.log nginx в Elasticsearch.
