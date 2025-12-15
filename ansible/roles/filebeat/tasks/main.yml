@@ -1,0 +1,33 @@
+---
+# roles/filebeat/tasks/main.yml
+
+- name: Install Filebeat from local deb
+  become: true
+  ansible.builtin.copy:
+    src: filebeat-8.11.0-amd64.deb    # лежит в ansible/files
+    dest: /tmp/filebeat-8.11.0-amd64.deb
+    mode: '0644'
+
+- name: Ensure Filebeat package is installed
+  become: true
+  ansible.builtin.apt:
+    deb: /tmp/filebeat-8.11.0-amd64.deb
+    state: present
+  notify: Restart filebeat
+
+- name: Deploy filebeat.yml
+  become: true
+  ansible.builtin.template:
+    src: filebeat.yml.j2
+    dest: /etc/filebeat/filebeat.yml
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart filebeat
+
+- name: Ensure Filebeat service is enabled and running
+  become: true
+  ansible.builtin.service:
+    name: filebeat
+    state: started
+    enabled: true

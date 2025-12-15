@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ web_index_title }}</title>
+</head>
+<body>
+    <h1>{{ web_site_name }}</h1>
+    <p>{{ web_index_message }}</p>
+
+    <hr>
+    <h2>Node info</h2>
+    <ul>
+        <li>Hostname: {{ ansible_hostname }}</li>
+        <li>FQDN: {{ ansible_fqdn | default('unknown') }}</li>
+        <li>IP: {{ ansible_default_ipv4.address | default('unknown') }}</li>
+        <li>Group(s): {{ group_names | join(', ') }}</li>
+    </ul>
+
+    <p>Served via Yandex Application Load Balancer.</p>
+</body>
+</html>

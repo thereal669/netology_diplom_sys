@@ -1,0 +1,14 @@
+cluster.name: "yc-elk"
+node.name: "elastic-1"
+
+path.data: /var/lib/elasticsearch
+path.logs: /var/log/elasticsearch
+
+network.host: 0.0.0.0
+http.port: 9200
+
+# Одноузловой кластер (очень важно для простой инсталляции)
+discovery.type: single-node
+
+# Отключаем безопасность, чтобы не заморачиваться с паролями и TLS
+xpack.security.enabled: false

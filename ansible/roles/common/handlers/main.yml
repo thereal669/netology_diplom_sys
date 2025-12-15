@@ -1,0 +1,5 @@
+---
+# Для MOTD перезапуск не нужен, но Ansible любит handlers :)
+- name: Restart motd (dummy)
+  ansible.builtin.debug:
+    msg: "MOTD updated"

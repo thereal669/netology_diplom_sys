@@ -1,0 +1,5 @@
+cloud_id            = "CHANGE_ME_CLOUD_ID"
+folder_id           = "CHANGE_ME_FOLDER_ID"
+sa_key_file         = "/home/YOUR_USERNAME/.yc-keys/sa-key.json"
+public_ssh_key_path = "/home/YOUR_USERNAME/.ssh/id_rsa.pub"
+vm_username         = "yc-user"

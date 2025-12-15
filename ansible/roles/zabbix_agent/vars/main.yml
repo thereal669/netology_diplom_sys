@@ -1,0 +1,4 @@
+---
+zabbix_server_ip: "10.10.1.17"  # здесь поменяй на внутренний IP zabbix-1
+zabbix_agent_hostname: "{{ inventory_hostname }}"
+

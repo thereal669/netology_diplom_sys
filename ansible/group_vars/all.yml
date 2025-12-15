@@ -1,0 +1,36 @@
+# ansible/group_vars/all.yml
+---
+# Общие настройки для всех хостов
+
+common_timezone: "Europe/Moscow"
+
+common_packages:
+  - htop
+  - curl
+  - vim
+  - net-tools
+  - wget
+  - git
+
+# Можно включить/выключить автоматическое обновление
+common_do_apt_upgrade: true
+
+# ---- для Zabbix + Nginx ----
+# ВНУТРЕННИЙ IP Zabbix-сервера (из yc compute instance list)
+zabbix_server_ip: "10.10.1.21"
+
+# Путь, по которому Nginx отдаёт stub_status
+nginx_stub_status_path: "/nginx_status"
+
+# ВНУТРЕННИЙ IP Elasticsearch-сервера
+elasticsearch_host: "10.10.2.7"
+
+# ВНУТРЕННИЙ IP Kibana-сервера
+kibana_host: "10.10.1.3"
+
+# ВННЕШНИЙ IP Kibana-сервера
+kibana_ip: "51.250.88.6"
+
+elastic_docker_image: "elasticsearch:8.11.0"
+
+kibana_docker_image: "kibana:8.11.0"

@@ -1,0 +1,42 @@
+---
+- name: Apply common configuration to all hosts
+  hosts: all:!bastion
+  become: true
+  roles:
+    - common
+
+- name: Configure web servers
+  hosts: web
+  become: true
+  roles:
+    - web
+
+- name: Configure Zabbix Server
+  hosts: zabbix
+  become: true
+  roles:
+    - zabbix_server
+
+- name: Configure Zabbix Agents
+  hosts: monitored
+  become: true
+  roles:
+    - zabbix_agent
+
+- name: Configure Elasticsearch node
+  hosts: elastic
+  become: true
+  roles:
+    - elasticsearch
+
+- name: Configure Filebeat on web servers
+  hosts: web
+  become: true
+  roles:
+    - filebeat
+
+- name: Configure Kibana
+  hosts: kibana
+  become: true
+  roles:
+    - kibana

@@ -1,0 +1,50 @@
+---
+# 1) Установка/обновление агента
+
+- name: Ensure Zabbix agent package is installed (latest)
+  become: true
+  ansible.builtin.apt:
+    name: zabbix-agent
+    state: latest       # при необходимости обновит агент до последней версии из доступного репо
+    update_cache: yes
+
+# 2) Каталоги, которые агент ожидает
+
+- name: Ensure Zabbix log directory exists
+  become: true
+  ansible.builtin.file:
+    path: /var/log/zabbix
+    state: directory
+    owner: zabbix
+    group: zabbix
+    mode: '0755'
+
+- name: Ensure Zabbix agent include directory exists
+  become: true
+  ansible.builtin.file:
+    path: /etc/zabbix/zabbix_agentd.d
+    state: directory
+    owner: zabbix
+    group: zabbix
+    mode: '0755'
+
+# 3) Конфиг агента
+
+- name: Deploy zabbix_agentd.conf
+  become: true
+  ansible.builtin.template:
+    src: zabbix_agentd.conf.j2
+    dest: /etc/zabbix/zabbix_agentd.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart zabbix-agent
+
+# 4) Сервис
+
+- name: Ensure Zabbix agent is enabled and running
+  become: true
+  ansible.builtin.service:
+    name: zabbix-agent
+    state: started
+    enabled: true

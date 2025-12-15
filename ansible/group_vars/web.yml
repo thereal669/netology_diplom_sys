@@ -1,0 +1,9 @@
+---
+web_site_name: "HA Web Infra"
+web_index_title: "High Available Web Infrastructure"
+web_index_message: "This page is served from HA web cluster behind Yandex ALB."
+
+web_nginx_listen_port: 80
+web_nginx_server_name: "_"
+web_nginx_access_log: "/var/log/nginx/access.log"
+web_nginx_error_log: "/var/log/nginx/error.log"

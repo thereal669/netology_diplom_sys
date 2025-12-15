@@ -1,0 +1,13 @@
+- name: Restart zabbix-server
+  become: true
+  ansible.builtin.service:
+    name: zabbix-server
+    state: restarted
+    enabled: true
+
+- name: Restart apache2
+  become: true
+  ansible.builtin.service:
+    name: apache2
+    state: restarted
+    enabled: true

@@ -1,0 +1,11 @@
+********************************************
+*  High Available Web Infrastructure       *
+********************************************
+
+Host: {{ ansible_hostname }}
+FQDN: {{ ansible_fqdn | default('unknown') }}
+IP:   {{ ansible_default_ipv4.address | default('unknown') }}
+
+Role: {{ group_names | join(', ') }}
+
+Managed by Ansible.

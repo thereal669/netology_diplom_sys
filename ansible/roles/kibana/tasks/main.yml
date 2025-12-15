@@ -1,0 +1,31 @@
+---
+
+- name: Install Docker engine for Kibana host
+  become: true
+  apt:
+    name:
+      - docker.io
+    state: present
+    update_cache: yes
+
+- name: Ensure Docker service is enabled and running
+  become: true
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Remove existing Kibana container if present
+  become: true
+  shell: docker rm -f kibana || true
+  changed_when: false
+
+- name: Run Kibana container
+  become: true
+  shell: |
+    docker run -d \
+      --name kibana \
+      --restart unless-stopped \
+      -p 5601:5601 \
+      -e ELASTICSEARCH_HOSTS="http://elastic-1.ru-central1.internal:9200" \
+      {{ kibana_docker_image }}

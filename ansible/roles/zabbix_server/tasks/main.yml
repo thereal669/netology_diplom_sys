@@ -1,0 +1,166 @@
+---
+# roles/zabbix_server/tasks/main.yml
+
+# 1) Репозиторий Zabbix
+
+- name: Ensure Zabbix repo package is downloaded (Ubuntu 22.04)
+  ansible.builtin.get_url:
+    url: "https://repo.zabbix.com/zabbix/7.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_7.0-1+ubuntu22.04_all.deb"
+    dest: /tmp/zabbix-release_7.0-1+ubuntu22.04_all.deb
+    mode: '0644'
+  when:
+    - ansible_os_family == "Debian"
+    - ansible_distribution_major_version == "22"
+
+- name: Install Zabbix repo package
+  become: true
+  ansible.builtin.apt:
+    deb: /tmp/zabbix-release_7.0-1+ubuntu22.04_all.deb
+    state: present
+  register: zabbix_repo_install
+  failed_when: >
+    zabbix_repo_install.failed and
+    ("A later version is already installed" not in zabbix_repo_install.msg)
+  when:
+    - ansible_os_family == "Debian"
+    - ansible_distribution_major_version == "22"
+
+- name: Update apt cache after adding Zabbix repo
+  become: true
+  ansible.builtin.apt:
+    update_cache: yes
+  when:
+    - ansible_os_family == "Debian"
+
+# 2) Установка Zabbix + PostgreSQL
+
+- name: Install Zabbix server and DB packages
+  become: true
+  ansible.builtin.apt:
+    name:
+      - zabbix-server-pgsql
+      - zabbix-frontend-php
+      - zabbix-apache-conf
+      - zabbix-sql-scripts
+    state: present
+    update_cache: true
+
+- name: Install PHP PostgreSQL modules
+  become: true
+  ansible.builtin.apt:
+    name:
+      - php-pgsql
+    state: present
+
+- name: Enable PHP pgsql modules
+  become: true
+  ansible.builtin.command: phpenmod pgsql pdo_pgsql
+  notify: Restart apache2
+
+- name: Install PostgreSQL server for Zabbix
+  become: true
+  ansible.builtin.apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+    state: present
+    update_cache: yes
+
+# 3) Создание пользователя и БД Zabbix (PostgreSQL)
+
+- name: Ensure Zabbix DB user exists
+  become: true
+  ansible.builtin.shell: |
+    sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='zabbix'" | grep -q 1 || \
+    sudo -u postgres psql -c "CREATE USER zabbix WITH ENCRYPTED PASSWORD 'zabbix';"
+
+- name: Ensure Zabbix database exists
+  become: true
+  ansible.builtin.shell: |
+    sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='zabbix'" | grep -q 1 || \
+    sudo -u postgres psql -c "CREATE DATABASE zabbix OWNER zabbix;"
+
+# 4) Импорт схемы Zabbix (только один раз)
+
+- name: Check if Zabbix schema already loaded
+  become: true              # становимся root
+  ansible.builtin.shell: |
+    sudo -u postgres psql -d {{ zabbix_db_name }} -tAc \
+      "SELECT 1 FROM pg_tables WHERE schemaname='public' AND tablename='users';"
+  register: zabbix_schema_check
+  changed_when: false
+
+- name: Check if Zabbix schema flag exists
+  become: true
+  ansible.builtin.stat:
+    path: /var/lib/postgresql/.zabbix_schema_loaded
+  register: zabbix_schema_flag
+
+- name: Import initial Zabbix schema (may take a while)
+  become: true
+  ansible.builtin.shell: |
+    sudo -u postgres psql -d {{ zabbix_db_name }} -tc \
+      "SELECT 1 FROM pg_tables WHERE tablename = 'users';" | grep -q 1 || \
+    zcat /usr/share/zabbix-sql-scripts/postgresql/server.sql.gz \
+      | sudo -u postgres psql -d {{ zabbix_db_name }}
+
+- name: Create flag file after schema import
+  become: true
+  ansible.builtin.file:
+    path: /var/lib/postgresql/.zabbix_schema_loaded
+    state: touch
+    owner: postgres
+    group: postgres
+    mode: '0640'
+  when: not zabbix_schema_flag.stat.exists
+
+- name: Grant privileges on Zabbix DB objects to Zabbix user
+  become: true
+  ansible.builtin.shell: |
+    if [ ! -f /var/lib/postgresql/.zabbix_grants_done ]; then
+      sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE {{ zabbix_db_name }} TO {{ zabbix_db_user }};"
+      sudo -u postgres psql -d {{ zabbix_db_name }} -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO {{ zabbix_db_user }};"
+      sudo -u postgres psql -d {{ zabbix_db_name }} -c "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO {{ zabbix_db_user }};"
+      touch /var/lib/postgresql/.zabbix_grants_done
+    fi
+  args:
+    executable: /bin/bash
+
+# 5) Конфиг Zabbix-сервера
+
+- name: Deploy zabbix_server.conf
+  become: true
+  ansible.builtin.template:
+    src: zabbix_server.conf.j2
+    dest: /etc/zabbix/zabbix_server.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart zabbix-server
+
+# 6) Правка таймзоны для веб-интерфейса в Apache-конфиге Zabbix
+
+- name: Set PHP timezone in /etc/zabbix/apache.conf
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/zabbix/apache.conf
+    regexp: '^\s*php_value\s+date.timezone'
+    line: "        php_value date.timezone {{ zabbix_timezone }}"
+    state: present
+  notify: Restart apache2
+
+# 7) Убедиться, что сервисы включены и запущены
+
+- name: Ensure zabbix-server is enabled and running
+  become: true
+  ansible.builtin.service:
+    name: zabbix-server
+    state: started
+    enabled: yes
+
+- name: Ensure apache2 is enabled and running
+  become: true
+  ansible.builtin.service:
+    name: apache2
+    state: started
+    enabled: yes

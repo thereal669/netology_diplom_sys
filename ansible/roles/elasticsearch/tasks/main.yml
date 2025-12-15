@@ -1,0 +1,44 @@
+---
+
+- name: Install Docker engine for Elasticsearch host
+  become: true
+  apt:
+    name:
+      - docker.io
+    state: present
+    update_cache: yes
+
+- name: Ensure Docker service is enabled and running
+  become: true
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Create Elasticsearch data directory
+  become: true
+  file:
+    path: /var/lib/elasticsearch
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+
+- name: Remove existing Elasticsearch container if present
+  become: true
+  shell: docker rm -f elasticsearch || true
+  changed_when: false
+
+- name: Run Elasticsearch container (single-node)
+  become: true
+  shell: |
+    docker run -d \
+      --name elasticsearch \
+      --restart unless-stopped \
+      -p 9200:9200 -p 9300:9300 \
+      -e discovery.type=single-node \
+      -e xpack.security.enabled=false \
+      -e ES_JAVA_OPTS="-Xms1g -Xmx1g" \
+      -v /var/lib/elasticsearch:/usr/share/elasticsearch/data \
+      {{ elastic_docker_image }}
+
