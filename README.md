@@ -86,7 +86,11 @@
 
 ## Решение
 
-*БУДУЩЕЕ РЕШЕНИЕ*
+(чуть позже скрины добавлю)
+
+Zabbix доступен по линку - http://158.160.105.95/zabbix/
+Логин - Admin
+Пароль - zabbix
 
 ### Логи
 Cоздайте ВМ, разверните на ней Elasticsearch. Установите filebeat в ВМ к веб-серверам, настройте на отправку access.log, error.log nginx в Elasticsearch.
@@ -95,7 +99,9 @@ Cоздайте ВМ, разверните на ней Elasticsearch. Устан
 
 ## Решение
 
-*БУДУЩЕЕ РЕШЕНИЕ*
+![screen](pics/9.jpg)
+
+Ссылка на Kibana - http://51.250.88.6:5601/
 
 ### Сеть
 Разверните один VPC. Сервера web, Elasticsearch поместите в приватные подсети. Сервера Zabbix, Kibana, application load balancer определите в публичную подсеть.
