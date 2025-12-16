@@ -35,6 +35,8 @@
 
 ### Решение
 
+'Обратите внимание при проверке > добавил key, tfstate, tfvars в гитигнор'
+
 ![screen](pics/1.jpg)
 
 ![screen](pics/2.jpg)
