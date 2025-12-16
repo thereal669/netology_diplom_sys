@@ -90,9 +90,16 @@
 
 ## Решение
 
-![screen](pics/18.jpg)
+![screen](pics/19.jpg)
+
+![screen](pics/20.jpg)
+
+![screen](pics/21.jpg)
+
 
 Zabbix доступен по линку - http://158.160.105.95/zabbix/
+
+`update: виртуальная машина сменила ip после 24 часов, актуальный линк http://158.160.123.79/zabbix/`
 
 Логин - Admin
 
